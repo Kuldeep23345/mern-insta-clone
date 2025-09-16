@@ -91,11 +91,25 @@ const logoutUser = async (_, res) => {
       .status(200)
       .json({ message: "Logout successfully", success: true });
   } catch (error) {
-    console.log('error in logout ',error)
-    return res
-      .status(500)
-      .json({ message: "Logout failed", success: false});
+    console.log("error in logout ", error);
+    return res.status(500).json({ message: "Logout failed", success: false });
   }
 };
 
-export { registerUser, loginUser, logoutUser };
+const getProfile = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    return res.status(200).json({ user, success: true });
+  } catch (error) {
+    console.log("Error in login user", error);
+    return res.status(500).json({
+      message: "Internal server error in login user",
+      success: false,
+    });
+  }
+};
+
+
+
+export { registerUser, loginUser, logoutUser ,getProfile};
