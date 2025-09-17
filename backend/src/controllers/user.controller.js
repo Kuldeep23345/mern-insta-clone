@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { Post } from "../models/post.model.js";
 const registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -62,6 +63,18 @@ const loginUser = async (req, res) => {
     }
     const token = await existedUsers.generateAccessToken();
 
+    const populatedPosts = await Promise.all(
+      existedUsers.posts.map(async (postId) => {
+        const post = await Post.findById(postId);
+        if (post.author.equals(existedUsers._id)) {
+          return post;
+        } else {
+          return null;
+        }
+      })
+    );
+    existedUsers.posts = populatedPosts;
+    await existedUsers.save();
     return res
       .cookie("token", token, {
         httpOnly: true,
@@ -121,7 +134,6 @@ const editProfile = async (req, res) => {
       profilePhotoLocalPath = await uploadOnCloudinary(profilePhoto);
     }
 
-
     const user = await User.findById(userId);
     if (!user) {
       return res
@@ -150,7 +162,6 @@ const editProfile = async (req, res) => {
 const getSuggestedUsers = async (req, res) => {
   try {
     const userId = req.user._id;
-    
 
     const suggestedUsers = await User.find({ _id: { $ne: userId } }).select(
       "-password"
@@ -182,8 +193,8 @@ const followOrUnfollow = async (req, res) => {
         success: false,
       });
     }
-    const user = await User.findById( followKarneWala );
-    const targetUser = await User.findById( jiskoFollowKaronga );
+    const user = await User.findById(followKarneWala);
+    const targetUser = await User.findById(jiskoFollowKaronga);
 
     if (!user || !targetUser) {
       return res
@@ -205,10 +216,10 @@ const followOrUnfollow = async (req, res) => {
           { $pull: { followers: followKarneWala } }
         ),
       ]);
-      return res.status(200).json({message:"Unfollowed successfully",success:true}) 
-    }
-    
-    else {
+      return res
+        .status(200)
+        .json({ message: "Unfollowed successfully", success: true });
+    } else {
       await Promise.all([
         User.updateOne(
           { _id: followKarneWala },
@@ -219,9 +230,10 @@ const followOrUnfollow = async (req, res) => {
           { $push: { followers: followKarneWala } }
         ),
       ]);
-       return res.status(200).json({message:"followed successfully",success:true}) 
+      return res
+        .status(200)
+        .json({ message: "followed successfully", success: true });
     }
-
   } catch (error) {
     console.log("Error in followOrUnfollow ", error);
     return res.status(500).json({
@@ -238,5 +250,5 @@ export {
   getProfile,
   editProfile,
   getSuggestedUsers,
-  followOrUnfollow
+  followOrUnfollow,
 };

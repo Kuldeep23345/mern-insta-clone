@@ -13,11 +13,15 @@ app.use(
   })
 );
 app.use(cookieParser());
-app.use(express.static('public'))
+app.use(express.static("public"));
 
 // Routes
 
 import userRoutes from "./routes/user.route.js";
-app.use("/api/v1/user", userRoutes);
+import postRoutes from "./routes/post.route.js";
+import messageRoutes from "./routes/message.route.js";
 
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/post", postRoutes);
+app.use("/api/v1/message", messageRoutes);
 export { app };
