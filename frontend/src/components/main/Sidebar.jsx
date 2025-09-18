@@ -11,8 +11,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import instance from "@/lib/axios.instance";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { setAuthUser } from "@/redux/authSlice";
 
-const sidebarItems = [
+
+
+
+const Sidebar = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch()
+    const {user}=useSelector(store=>store.auth)
+    const sidebarItems = [
   {
     icon: <Home />,
     text: "Home",
@@ -40,7 +49,7 @@ const sidebarItems = [
   {
     icon: (
       <Avatar>
-        <AvatarImage src="https://github.com/shadcn.png" />
+        <AvatarImage className={'object-cover'} src={user?.profilePicture} />
         <AvatarFallback>CN</AvatarFallback>
       </Avatar>
     ),
@@ -52,16 +61,13 @@ const sidebarItems = [
     text: "Logout",
   },
 ];
-
-
-const Sidebar = () => {
-    const navigate = useNavigate();
     const logoutHandler = async () => {
       try {
         const res = await instance.get("/user/logout");
         if (res.data.success) {
           toast.success(res?.data?.message);
           navigate("/login");
+          dispatch(setAuthUser(null))
         }
       } catch (error) {
         console.log(error);

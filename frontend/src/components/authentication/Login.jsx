@@ -13,6 +13,8 @@ import instance from "@/lib/axios.instance";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setAuthUser } from "@/redux/authSlice";
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -20,7 +22,8 @@ const Login = () => {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const inputHandler = (e) => {
     const { id, value } = e.target;
@@ -33,12 +36,14 @@ const Login = () => {
     try {
       const res = await instance.post("/user/login", input);
       if (res.data.success) {
+        
+        dispatch(setAuthUser(res?.data?.existedUsers));
         toast.success(res?.data?.message);
         setInput({
           email: "",
           password: "",
         });
-        navigate('/')
+        navigate("/");
       }
     } catch (error) {
       console.log(error);
@@ -74,7 +79,6 @@ const Login = () => {
                 <div className="grid gap-3">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                   
                   </div>
                   <Input
                     id="password"
@@ -83,7 +87,7 @@ const Login = () => {
                     onChange={inputHandler}
                   />
                 </div>
-                 <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3">
                   {loading ? (
                     <Button disabled className="w-full cursor-not-allowed">
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -98,8 +102,8 @@ const Login = () => {
               </div>
               <div className="mt-4 text-center text-sm">
                 Don&apos;t have an account?{" "}
-                <Link to={'/signup'} className="underline underline-offset-4">
-                Sign up
+                <Link to={"/signup"} className="underline underline-offset-4">
+                  Sign up
                 </Link>
               </div>
             </form>
