@@ -1,9 +1,18 @@
-import { KeyRound, Mail, User } from "lucide-react";
-import React from "react";
-import { Button } from "../ui/button";
-import { useState } from "react";
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import instance from "@/lib/axios.instance";
 import { toast } from "sonner";
+import { Link, useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 const Signup = () => {
   const [input, setInput] = useState({
@@ -11,80 +20,104 @@ const Signup = () => {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
   const inputHandler = (e) => {
-    const { name, value } = e.target;
-    setInput((prevInput) => ({ ...prevInput, [name]: value }));
+    const { id, value } = e.target;
+    setInput((prevInput) => ({ ...prevInput, [id]: value }));
   };
+
   const submitHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await instance.post("/user/register", input);
-      if (res?.data?.success) {
+      if (res.data.success) {
         toast.success(res?.data?.message);
+        setInput({
+          username: "",
+          email: "",
+          password: "",
+        });
+        navigate("/login");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.message || "Signup faild");
+      toast.error(error?.response?.data?.message || "Login faild");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <section className="w-full h-screen flex items-center justify-center">
-      <form
-        onSubmit={submitHandler}
-        className="bg-white text-gray-500 max-w-[340px] w-full mx-4 md:p-6 p-4 py-8 text-left text-sm rounded-lg shadow-[0px_0px_10px_0px] shadow-black/10"
-      >
-        <h2 className="text-2xl font-bold mb-9 text-center text-gray-800">
-          Sign Up
-        </h2>
-        <div className="flex items-center my-2 border bg-indigo-500/5 border-gray-500/10 rounded gap-1 pl-2">
-          <User size={"20px"} />
-          <input
-            className="w-full outline-none bg-transparent py-2.5"
-            type="text"
-            placeholder="Username"
-            required
-            name="username"
-            onChange={inputHandler}
-          />
-        </div>
-        <div className="flex items-center my-2 border bg-indigo-500/5 border-gray-500/10 rounded gap-1 pl-2">
-          <Mail size={"20px"} />
-          <input
-            className="w-full outline-none bg-transparent py-2.5"
-            type="email"
-            placeholder="Email"
-            required
-            name="email"
-            onChange={inputHandler}
-          />
-        </div>
-        <div className="flex items-center mt-2 mb-8 border bg-indigo-500/5 border-gray-500/10 rounded gap-1 pl-2">
-          <KeyRound size={"20px"} />
-          <input
-            className="w-full outline-none py-2.5  bg-transparent  "
-            type="password"
-            placeholder="Password"
-            required
-            name="password"
-            onChange={inputHandler}
-          />
-        </div>
-
-        <Button
-          type="submit"
-          className="w-full mb-3 bg-indigo-500 hover:bg-indigo-600 transition-all active:scale-95 py-2.5 rounded text-white font-medium"
-        >
-          Create Account
-        </Button>
-        <p className="text-center mt-4">
-          Already have an account?{" "}
-          <a href="#" className="text-blue-500 underline">
-            Log In
-          </a>
-        </p>
-      </form>
-    </section>
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <Card>
+          <CardHeader>
+            <CardTitle>Login to your account</CardTitle>
+            <CardDescription>
+              Enter your email below to login to your account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={submitHandler}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="exmaple123"
+                    required
+                    onChange={inputHandler}
+                  />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    onChange={inputHandler}
+                  />
+                </div>
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Password</Label>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    onChange={inputHandler}
+                  />
+                </div>
+                <div className="flex flex-col gap-3">
+                  {loading ? (
+                    <Button disabled className="w-full cursor-not-allowed">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait...
+                    </Button>
+                  ) : (
+                    <Button type="submit" className="w-full cursor-pointer">
+                   Sign Up
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="mt-4 text-center text-sm">
+               Already have an account?{" "}
+                <Link to={"/login"} className="underline underline-offset-4">
+                 Login
+                </Link>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 

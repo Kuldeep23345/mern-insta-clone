@@ -23,8 +23,9 @@ const registerUser = async (req, res) => {
     const newUser = await User.create({
       username,
       email,
-      password,
-    });
+      password
+   
+    })
 
     return res
       .status(201)
@@ -52,7 +53,7 @@ const loginUser = async (req, res) => {
     if (!existedUsers) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-    const isPasswordCorrect = existedUsers.isPasswordCorrect(password);
+    const isPasswordCorrect = await existedUsers.isPasswordCorrect(password);
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -77,7 +78,7 @@ const loginUser = async (req, res) => {
         sameSite: "strict",
         maxAge: 24 * 60 * 60 * 1000,
       })
-      .status(400)
+      .status(200)
       .json({ message: "Login successfully", success: true, existedUsers });
   } catch (error) {
     console.log("Error in login user", error);

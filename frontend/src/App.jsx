@@ -1,13 +1,23 @@
-import React from 'react'
-import { Button } from './components/ui/button'
-import Signup from './components/authentication/Signup'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Signup from "./components/authentication/Signup";
+import Login from "./components/authentication/Login";
+import Layout from "./pages/Layout";
+import Profile from "./components/main/Profile";
+import Home from "./pages/home/Home";
 
 const App = () => {
   return (
-    <div>
-      <Signup/>
-    </div>
-  )
-}
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+        <Route path="signup" element={<Signup />} />
+        <Route path="login" element={<Login />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
-export default App
+export default App;
