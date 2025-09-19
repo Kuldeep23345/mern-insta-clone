@@ -6,11 +6,14 @@ import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import instance from "@/lib/axios.instance";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setPosts } from "@/redux/postSlice";
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef()
   const dispatch = useDispatch()
+  const { user } = useSelector(store => store.auth)
+  const { posts } = useSelector(store => store.posts)
   const [loading, setLoading] = useState(false)
   const [file, setFile] = useState('')
   const [caption, setCaption] = useState("")
@@ -50,12 +53,13 @@ const CreatePost = ({ open, setOpen }) => {
         headers: { "Content-Type": "multipart/form-data" }
       })
       if (res.data.success) {
-
+        dispatch(setPosts([res.data.post,...posts ]))
         setLoading(true)
         toast.success(res?.data?.message)
         setCaption("")
         setImagePreview("")
-        
+        setOpen(false)
+
 
       }
     } catch (error) {
@@ -72,12 +76,12 @@ const CreatePost = ({ open, setOpen }) => {
         <DialogHeader className={'text-center font-semibold'}> Create new post</DialogHeader>
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage src={""} />
+            <AvatarImage src={user?.profilePicture} />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="font-semibold text-xs"></h1>
-            <span className="text-gray-600">Bio Here ..</span>
+            <h1 className="font-semibold text-xs">{user?.username}</h1>
+            <span className="text-gray-600 line-clamp-1">{user?.bio}</span>
           </div>
         </div>
         <Textarea value={caption} onChange={(e) => setCaption(e.target.value)} className={'border-none focus-visible:ring-transparent'} placeholder="write a caption" />

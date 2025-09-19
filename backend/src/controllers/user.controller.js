@@ -12,7 +12,7 @@ const registerUser = async (req, res) => {
       });
     }
     const existedUser = await User.findOne({
-      email
+      email,
     });
     if (existedUser) {
       return res
@@ -23,9 +23,8 @@ const registerUser = async (req, res) => {
     const newUser = await User.create({
       username,
       email,
-      password
-   
-    })
+      password,
+    });
 
     return res
       .status(201)
@@ -41,14 +40,14 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    if (!password || (!email && !username)) {
+    const { email, password } = req.body;
+    if (!password || !email) {
       return res.status(400).json({
-        message: "All fields are required either email or username",
+        message: "All fields are required ",
         success: false,
       });
     }
-    const existedUsers = await User.findOne({ $nor: [{ email, username }] });
+    const existedUsers = await User.findOne({ email });
 
     if (!existedUsers) {
       return res.status(400).json({ message: "Invalid credentials" });
@@ -62,13 +61,15 @@ const loginUser = async (req, res) => {
     const populatedPosts = await Promise.all(
       existedUsers.posts.map(async (postId) => {
         const post = await Post.findById(postId);
-        if (post.author.equals(existedUsers._id)) {
+        if (post?.author?.equals(existedUsers._id)) {
           return post;
         } else {
           return null;
         }
       })
     );
+    console.log(token);
+
     existedUsers.posts = populatedPosts;
     await existedUsers.save();
     return res
