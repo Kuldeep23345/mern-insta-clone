@@ -2,27 +2,22 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
+import sharp from "sharp"
 const addNewPost = async (req, res) => {
   try {
     const authorId = req.user._id;
     const { caption } = req.body;
     const image = req.file || null;
+    
 
     if (!image) {
       return res
         .status(400)
         .json({ message: "Image is required", success: false });
     }
-    const optimizedImage = await sharp(image.buffer, {
-      create: {
-        width: 800,
-        height: 800,
-      },
-    })
-      .jpeg()
-      .toBuffer();
+ 
 
-    const cloudResponse = await uploadOnCloudinary(optimizedImage);
+    const cloudResponse = await uploadOnCloudinary(image.path);
     const post = await Post.create({
       caption,
       image: cloudResponse.secure_url,

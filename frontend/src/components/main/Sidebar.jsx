@@ -13,70 +13,73 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
-
-
-
+import { useState } from "react";
+import CreatePost from "./CreatePost";
 
 const Sidebar = () => {
-    const navigate = useNavigate();
-    const dispatch = useDispatch()
-    const {user}=useSelector(store=>store.auth)
-    const sidebarItems = [
-  {
-    icon: <Home />,
-    text: "Home",
-  },
-  {
-    icon: <Search />,
-    text: "Search",
-  },
-  {
-    icon: <TrendingUp />,
-    text: "Explore",
-  },
-  {
-    icon: <MessageCircle />,
-    text: "Message",
-  },
-  {
-    icon: <Heart />,
-    text: "Notifications",
-  },
-  {
-    icon: <PlusSquare />,
-    text: "Create",
-  },
-  {
-    icon: (
-      <Avatar>
-        <AvatarImage className={'object-cover'} src={user?.profilePicture} />
-        <AvatarFallback>CN</AvatarFallback>
-      </Avatar>
-    ),
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
+  const { user } = useSelector((store) => store.auth);
+  const sidebarItems = [
+    {
+      icon: <Home />,
+      text: "Home",
+    },
+    {
+      icon: <Search />,
+      text: "Search",
+    },
+    {
+      icon: <TrendingUp />,
+      text: "Explore",
+    },
+    {
+      icon: <MessageCircle />,
+      text: "Message",
+    },
+    {
+      icon: <Heart />,
+      text: "Notifications",
+    },
+    {
+      icon: <PlusSquare />,
+      text: "Create",
+    },
+    {
+      icon: (
+        <Avatar>
+          <AvatarImage className={"object-cover"} src={user?.profilePicture} />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+      ),
 
-    text: "Profile",
-  },
-  {
-    icon: <LogOut />,
-    text: "Logout",
-  },
-];
-    const logoutHandler = async () => {
-      try {
-        const res = await instance.get("/user/logout");
-        if (res.data.success) {
-          toast.success(res?.data?.message);
-          navigate("/login");
-          dispatch(setAuthUser(null))
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error(error?.data?.response?.message);
+      text: "Profile",
+    },
+    {
+      icon: <LogOut />,
+      text: "Logout",
+    },
+  ];
+  const logoutHandler = async () => {
+    try {
+      const res = await instance.get("/user/logout");
+      if (res.data.success) {
+        toast.success(res?.data?.message);
+        navigate("/login");
+        dispatch(setAuthUser(null));
       }
-    };
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.data?.response?.message);
+    }
+  };
+
   const sidebarHandler = (item) => {
     if (item.text.toLowerCase() == "logout") {
       logoutHandler();
+    } else if (item.text.toLowerCase() == "create") {
+      setOpen(true);
     }
   };
   return (
@@ -93,6 +96,7 @@ const Sidebar = () => {
           </div>
         ))}
       </div>
+      <CreatePost open={open} setOpen={setOpen} />
     </section>
   );
 };
