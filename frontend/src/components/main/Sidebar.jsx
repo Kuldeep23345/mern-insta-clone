@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import instance from "@/lib/axios.instance";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
@@ -24,8 +24,8 @@ const Sidebar = () => {
   const { user } = useSelector((store) => store.auth);
   const sidebarItems = [
     {
-      icon: <Home />,
-      text: "Home",
+      icon: <Link to={'/'}><Home /></Link> ,
+      text: <Link to={'/'}>Home</Link>,
     },
     {
       icon: <Search />,
@@ -94,7 +94,7 @@ const Sidebar = () => {
           <div
             onClick={() => sidebarHandler(item)}
             key={index}
-            className="flex items-center  gap-2"
+            className="flex items-center  gap-2 cursor-pointer"
           >
             {item.icon}
             <span>{item.text}</span>
