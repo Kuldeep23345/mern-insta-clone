@@ -2,20 +2,18 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
-import sharp from "sharp"
+import sharp from "sharp";
 const addNewPost = async (req, res) => {
   try {
     const authorId = req.user._id;
     const { caption } = req.body;
     const image = req.file || null;
-    
 
     if (!image) {
       return res
         .status(400)
         .json({ message: "Image is required", success: false });
     }
- 
 
     const cloudResponse = await uploadOnCloudinary(image.path);
     const post = await Post.create({
@@ -48,13 +46,13 @@ const getAllPost = async (req, res) => {
   try {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .populate({ path: "author", select: "username , profilePicture" })
+      .populate({ path: "author", select: "username  profilePicture" })
       .populate({
         path: "comments",
         sort: { createdAt: -1 },
         populate: {
           path: "author",
-          select: "username,profilePicture",
+          select: "username profilePicture",
         },
       });
     return res.status(200).json({ posts, success: true });
@@ -72,11 +70,11 @@ const getUserPost = async (req, res) => {
     const authorId = req.user._id;
     const posts = await Post.find({ author: authorId })
       .sort({ createdAt: -1 })
-      .populate({ path: "author", select: "username,profilePicture" })
+      .populate({ path: "author", select: "username profilePicture" })
       .populate({
         path: "comments",
         sort: { createdAt: -1 },
-        populate: { path: "author", select: "username,profilePicture" },
+        populate: { path: "author", select: "username profilePicture" },
       });
 
     return res.status(200).json({ posts, success: true });
@@ -154,7 +152,7 @@ const addComment = async (req, res) => {
 
     await comment.populate({
       path: "author",
-      select: "username,profilePicture",
+      select: "username profilePicture",
     });
 
     post.comments.push(comment._id);
@@ -171,28 +169,32 @@ const addComment = async (req, res) => {
     });
   }
 };
-
 const getCommentOfPost = async (req, res) => {
   try {
     const postId = req.params.id;
-    const comments = await Comment.find({ post: postId }).populate(
-      "author",
-      "username,profilePicture"
-    );
-    if (!comments) {
-      return res
-        .status(404)
-        .json({ message: "No comments found for this post", success: false });
+
+    const comments = await Comment.find({ post: postId }).populate({
+      path: "author",
+      select: "username profilePicture", // 👈 space-separated, not comma
+    });
+
+    if (!comments || comments.length === 0) {
+      return res.status(404).json({
+        message: "No comments found for this post",
+        success: false,
+      });
     }
+
     return res.status(200).json({ success: true, comments });
   } catch (error) {
-    console.log("Error in get comment of post  ", error);
+    console.error("Error in getCommentOfPost:", error);
     return res.status(500).json({
-      message: "Internal server error in get comment of post ",
+      message: "Internal server error in get comment of post",
       success: false,
     });
   }
 };
+
 
 const deletePost = async (req, res) => {
   try {

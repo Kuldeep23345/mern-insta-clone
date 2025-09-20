@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
 import { useState } from "react";
 import CreatePost from "./CreatePost";
+import { setPosts, setSlectedPost } from "@/redux/postSlice";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const Sidebar = () => {
       icon: (
         <Avatar>
           <AvatarImage className={"object-cover"} src={user?.profilePicture} />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarFallback><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwRKRDbqqn3ily8fQJyYjGKww0I17Jld-ZGA&s" alt="CN" /></AvatarFallback>
         </Avatar>
       ),
 
@@ -68,6 +69,8 @@ const Sidebar = () => {
         toast.success(res?.data?.message);
         navigate("/login");
         dispatch(setAuthUser(null));
+        dispatch(setSlectedPost(null))
+        dispatch(setPosts([]))
       }
     } catch (error) {
       console.log(error);

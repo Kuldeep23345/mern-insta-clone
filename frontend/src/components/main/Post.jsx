@@ -8,12 +8,13 @@ import CommentDialog from "./CommentDialog";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import instance from "@/lib/axios.instance";
-import { setPosts } from "@/redux/postSlice";
+import { setPosts, setSlectedPost } from "@/redux/postSlice";
 
 const Post = ({ post }) => {
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false)
   const [postLike, setPostLike] = useState(post?.likes?.length)
+  const [comment, setComment] = useState(post?.comments)
   const { user } = useSelector(store => store.auth)
   const { posts } = useSelector(store => store.posts)
   const dispatch = useDispatch()
@@ -68,12 +69,22 @@ const Post = ({ post }) => {
 
   const commentHandler = async () => {
     try {
-      
+      const res = await instance.post(`/post/${post._id}/comment`, { text })
+      if (res.data.success) {
+        toast.success(res?.data?.message)
+        const updatedCommentData = [...comment, res?.data?.comment]
+        setComment(updatedCommentData)
+
+        const updatedPostData = posts.map(p => p._id === post._id ? { ...p, comments: updatedCommentData } : p)
+        dispatch(setPosts(updatedPostData))
+        setText("")
+      }
+
     } catch (error) {
-         console.log(error)
+      console.log(error)
       toast.error(error?.response?.data?.message)
     }
-    
+
   }
   return (
     <div className="my-8 w-full max-w-sm mx-auto">
@@ -81,7 +92,7 @@ const Post = ({ post }) => {
         <div className="flex items-center gap-2">
           <Avatar>
             <AvatarImage className={'object-cover'} src={post?.author?.profilePicture} />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarFallback><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwRKRDbqqn3ily8fQJyYjGKww0I17Jld-ZGA&s" alt="CN" /></AvatarFallback>
           </Avatar>
           <h1>{post?.author?.username}</h1>
         </div>
@@ -111,10 +122,10 @@ const Post = ({ post }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center justify-center gap-3 my-2">
             {
-              liked?<FaHeart onClick={likeOrDislikeHandler} size={"22px"} className="cursor-pointer text-red-500"/>:<FaRegHeart onClick={likeOrDislikeHandler} size={"22px"} className="cursor-pointer" />
+              liked ? <FaHeart onClick={likeOrDislikeHandler} size={"22px"} className="cursor-pointer text-red-500" /> : <FaRegHeart onClick={likeOrDislikeHandler} size={"22px"} className="cursor-pointer" />
             }
-            
-            <MessageCircle onClick={() => setOpen(true)} className="cursor-pointer hover:text-gray-600" />
+
+            <MessageCircle onClick={() => { dispatch(setSlectedPost(post)); setOpen(true) }} className="cursor-pointer hover:text-gray-600" />
             <Send className="cursor-pointer hover:text-gray-600" />
           </div>
           <Bookmark className="cursor-pointer hover:text-gray-600" />
@@ -125,7 +136,13 @@ const Post = ({ post }) => {
         <span className="font-medium mr-2">{post?.author?.username}</span>
         {post?.caption}
       </p>
-      <span className="cursor-pointer text-sm text-gray-400" onClick={() => setOpen(true)}>View all 10 comments</span>
+
+      {
+        comment.length > 0 && (
+          <span className="cursor-pointer text-sm text-gray-400" onClick={() => { dispatch(setSlectedPost(post)); setOpen(true) }}>View all {comment.length} comments</span>
+        )
+      }
+
       <CommentDialog open={open} setOpen={setOpen} />
       <div className="flex items-center justify-between">
         <input
@@ -135,7 +152,7 @@ const Post = ({ post }) => {
           onChange={changeEventHandler}
           className="outline-none text-sm w-full"
         />
-        {text && <span className="text-[#3BADF8]">Post</span>}
+        {text && <span onClick={commentHandler} className="text-[#3BADF8] cursor-pointer">Post</span>}
       </div>
     </div>
   );

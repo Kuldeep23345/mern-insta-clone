@@ -1,34 +1,67 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
 
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import { AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+
 import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "../ui/button";
+import { useDispatch, useSelector } from "react-redux";
+import Comment from "./Comment";
+import { toast } from "sonner";
+import instance from "@/lib/axios.instance";
+import { setPosts } from "@/redux/postSlice";
 
 const CommentDialog = ({ open, setOpen }) => {
 
-  const [text,   setText]  = useState("")
-  const changeEventHandler =(e)=>{
+  const [text, setText] = useState("")
+  const { selectedPost, posts } = useSelector(store => store.posts)
+  const dispatch = useDispatch()
+  const [comment, setComment] = useState([])
+  console.log(selectedPost)
+  const changeEventHandler = (e) => {
     const inputText = e.target.value
-    if(inputText.trim()){
+    if (inputText.trim()) {
       setText(inputText)
-    }else{
+    } else {
       setText("")
     }
   }
-  const sendMessageHandler =()=>{
-    alert(text)
+
+  useEffect(() => {
+    if (selectedPost) {
+      setComment(selectedPost.comments)
+    }
+  }, [selectedPost])
+
+
+  const sendMessageHandler = async () => {
+    try {
+      const res = await instance.post(`/post/${selectedPost._id}/comment`, { text })
+      if (res.data.success) {
+        toast.success(res?.data?.message)
+        const updatedCommentData = [...comment, res?.data?.comment]
+        setComment(updatedCommentData)
+
+        const updatedPostData = posts.map(p => p._id === selectedPost._id ? { ...p, comments: updatedCommentData } : p)
+        dispatch(setPosts(updatedPostData))
+        setText("")
+      }
+
+    } catch (error) {
+      console.log(error)
+      toast.error(error?.response?.data?.message)
+    }
+
   }
   return (
     <section>
       <Dialog open={open}>
-        <DialogTrigger>Open</DialogTrigger>
+        {/* <DialogTrigger>Open</DialogTrigger> */}
         <DialogContent
           onInteractOutside={() => setOpen(false)}
           className={
@@ -38,7 +71,7 @@ const CommentDialog = ({ open, setOpen }) => {
           <div className="flex flex-1">
             <div className="w-1/2">
               <img
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRX6Mi24zLzk0iWVS7h62M_fSF92uxyHxr8dg&s"
+                src={selectedPost?.image}
                 alt=""
                 className="h-full w-full object-cover"
               />
@@ -48,12 +81,12 @@ const CommentDialog = ({ open, setOpen }) => {
                 <div className="flex gap-3 items-center">
                   <Link>
                     <Avatar>
-                      <AvatarImage src="" />
+                      <AvatarImage className={'object-cover'} src={selectedPost?.author?.profilePicture} />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                   </Link>
                   <div>
-                    <Link className="font-semibold text-xs">username</Link>
+                    <Link className="font-semibold text-xs">{selectedPost?.author?.username}</Link>
                     {/* <span className="text-gray-600 text-sm">bio here ..</span> */}
                   </div>
                 </div>
@@ -75,7 +108,9 @@ const CommentDialog = ({ open, setOpen }) => {
               </div>
               <hr />
               <div className="flex-1 flex-col overflow-y-auto max-h-auto p-4">
-                comments ayenge
+                {
+                  comment?.map((comment) => <Comment key={comment._id} comment={comment} />)
+                }
               </div>
               <div className="p-4">
                 <div className="flex items-center gap-2">
