@@ -22,7 +22,7 @@ const CommentDialog = ({ open, setOpen }) => {
   const { selectedPost, posts } = useSelector(store => store.posts)
   const dispatch = useDispatch()
   const [comment, setComment] = useState([])
-  console.log(selectedPost)
+
   const changeEventHandler = (e) => {
     const inputText = e.target.value
     if (inputText.trim()) {

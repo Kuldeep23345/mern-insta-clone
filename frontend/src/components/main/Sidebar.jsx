@@ -83,6 +83,8 @@ const Sidebar = () => {
       logoutHandler();
     } else if (item.text.toLowerCase() == "create") {
       setOpen(true);
+    } else if (item.text.toLowerCase() == "profile") {
+      navigate(`/profile/${user?._id}`)
     }
   };
   return (
