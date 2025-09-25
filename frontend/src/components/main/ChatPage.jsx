@@ -1,11 +1,13 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
+import { setSelectedUser } from "@/redux/authSlice";
 
 const ChatPage = () => {
-  const { user, suggestedUser } = useSelector((store) => store.auth);
+  const { user, suggestedUser,selectedUser } = useSelector((store) => store.auth);
   const isOnlie = true
+  const dispatch= useDispatch()
 
   return (
     <div className="flex ml-[16%] h-screen">
@@ -14,7 +16,7 @@ const ChatPage = () => {
         <hr className="mb-4 border-gray-300" />
         <div className="overflow-y-auto h-[80vh]">
           {suggestedUser?.map((suggestedUser) => (
-            <div key={suggestedUser._id} className="flex gap-3 items-center p-3 hover:bg-gray-50 cursor-pointer">
+            <div onClick={()=>{dispatch(setSelectedUser(suggestedUser))}} key={suggestedUser._id} className="flex gap-3 items-center p-3 hover:bg-gray-50 cursor-pointer">
               <Avatar>
                 <AvatarImage src={suggestedUser?.profilePicture} />
                 <AvatarFallback>Cn</AvatarFallback>
@@ -27,6 +29,10 @@ const ChatPage = () => {
           ))}
         </div>
       </section>
+
+      {
+        
+      }
     </div>
   );
 };
